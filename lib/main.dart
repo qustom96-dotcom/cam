@@ -1,47 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 
-late List<CameraDescription> _cameras;
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  _cameras = await availableCameras();
-  runApp(const KameraApp());
+void main() {
+  runApp(const KameraProApp());
 }
 
-class KameraApp extends StatefulWidget {
-  const KameraApp({super.key});
-  @override
-  State<KameraApp> createState() => _KameraAppState();
-}
-
-class _KameraAppState extends State<KameraApp> {
-  late CameraController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = CameraController(_cameras[0], ResolutionPreset.max);
-    controller.initialize().then((_) {
-      if (!mounted) return;
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
+class KameraProApp extends StatelessWidget {
+  const KameraProApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return Container();
-    }
     return MaterialApp(
       home: Scaffold(
-        body: CameraPreview(controller),
+        body: CameraAwesomeBuilder.awesome(
+          // Postavke za video i sliku
+          saveConfig: SaveConfig.photoAndVideo(),
+          
+          // Kontrole koje si tražio (ISO, Shutter, Focus...)
+          onMediaTap: (media) {
+            print("Snimljeno: ${media.filePath}");
+          },
+          
+          // Senzor i rezolucija
+          sensorConfig: SensorConfig.single(
+            sensor: Sensor.position(SensorPosition.back),
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+          ),
+          
+          // Ovo automatski dodaje UI sa svim kontrolama
+          previewFit: CameraPreviewFit.cover,
+        ),
       ),
     );
   }
