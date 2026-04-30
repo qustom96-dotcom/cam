@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Trebamo kameru za testiranje aplikacije.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Trebamo mikrofon za video testiranje.</string>
 </dict>
 </plist>
