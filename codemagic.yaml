@@ -5,6 +5,6 @@ workflows:
     max_build_duration: 60
     scripts:
       - name: Flutter build
-        script: flutter build ios --release --no-codesign
+        script: flutter build ios --debug --no-codesign
     artifacts:
       - build/ios/iphoneos/*.app
