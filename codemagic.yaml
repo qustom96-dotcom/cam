@@ -2,10 +2,7 @@ workflows:
   ios-build:
     name: iOS Build
     instance_type: mac_mini_m1
-    max_build_duration: 60
     scripts:
-      - name: Build for iOS
-        script: |
-          flutter build ios --release --no-codesign
+      - flutter build ios --simulator --debug
     artifacts:
-      - build/ios/iphoneos/*.ipa
+      - build/ios/iphonesimulator/*.app
