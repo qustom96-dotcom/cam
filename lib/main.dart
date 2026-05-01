@@ -2,19 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
-  runApp(const KameraProApp());
-}
-
-class KameraProApp extends StatelessWidget {
-  const KameraProApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const KameraScreen(),
-    );
-  }
+  runApp(const MaterialApp(
+    home: KameraScreen(),
+    debugShowCheckedModeBanner: false,
+  ));
 }
 
 class KameraScreen extends StatefulWidget {
@@ -25,8 +16,7 @@ class KameraScreen extends StatefulWidget {
 }
 
 class _KameraScreenState extends State<KameraScreen> {
-  // Počinjemo sa 1/50 sekunde (0.02s)
-  double _currentShutterSpeed = 0.02;
+  double _brzina = 0.02; // Početna brzina 1/50s
 
   @override
   Widget build(BuildContext context) {
@@ -39,42 +29,42 @@ class _KameraScreenState extends State<KameraScreen> {
           aspectRatio: CameraAspectRatios.ratio_16_9,
         ),
         previewFit: CameraPreviewFit.cover,
-        // Ovdje pravimo naš vlastiti interfejs preko kamere
+        // Overlay je najbolji način da kontrolišeš senzor u realnom vremenu
         onOverlay: (state) {
           return Positioned(
             bottom: 100,
             left: 20,
             right: 20,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black54,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "BRZINA: 1 / ${(1 / _currentShutterSpeed).toStringAsFixed(0)}s",
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    "SHUTTER: 1 / ${(1 / _brzina).toStringAsFixed(0)}s",
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontSize: 18, 
+                      fontWeight: FontWeight.bold
+                    ),
                   ),
-                  const SizedBox(height: 10),
                   Slider(
-                    value: _currentShutterSpeed,
-                    min: 0.0005, // 1/2000s (jako tamno)
-                    max: 0.1,    // 1/10s (jako svijetlo)
-                    onChanged: (value) {
+                    value: _brzina,
+                    min: 0.0005, // 1/2000s
+                    max: 0.2,    // 1/5s
+                    onChanged: (v) {
                       setState(() {
-                        _currentShutterSpeed = value;
+                        _brzina = v;
                       });
-                      
-                      // DIREKTNO komandujemo senzoru
+                      // Ovdje šaljemo komande senzoru
                       state.sensorConfig.setExposureMode(ExposureMode.manual);
-                      // Fiksiramo ISO da nam ne kvari testiranje
-                      state.sensorConfig.setIso(400); 
-                      // Postavljamo tvoju brzinu
+                      state.sensorConfig.setIso(400); // Fiksiramo da ne skače samo
                       state.sensorConfig.setShutterSpeed(
-                        Duration(microseconds: (value * 1000000).toInt()),
+                        Duration(microseconds: (v * 1000000).toInt()),
                       );
                     },
                   ),
