@@ -6,6 +6,6 @@ workflows:
     scripts:
       - name: Build IPA without signing
         script: |
-          flutter build ios --debug --no-codesign --build-number=1 --extra-gen-snapshot-options="--no-use-integer-division"
+          flutter build ios --simulator --debug
     artifacts:
       - build/ios/iphoneos/*.app
