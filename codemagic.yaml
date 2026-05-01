@@ -4,8 +4,8 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 60
     scripts:
-      - name: Build IPA
+      - name: Build for Simulator
         script: |
-          flutter build ios --release --no-codesign
+          flutter build ios --simulator --debug
     artifacts:
-      - build/ios/iphoneos/Runner.app
+      - build/ios/simulator/*.app
