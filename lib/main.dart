@@ -29,47 +29,50 @@ class _KameraProScreenState extends State<KameraProScreen> {
           aspectRatio: CameraAspectRatios.ratio_16_9,
         ),
         previewFit: CameraPreviewFit.cover,
-        // Overlay koji direktno komanduje senzoru
-        onOverlay: (state) {
-          // Svaki put kad se ekran osvježi, potvrđujemo manualne postavke
-          state.sensorConfig.setExposureMode(ExposureMode.manual);
-          state.sensorConfig.setIso(400); 
-          state.sensorConfig.setShutterSpeed(
+        // ISPRAVLJEN BUILDER: Ovo je razlog zašto je build pucao
+        builder: (cameraState, preview) {
+          // Svaki put kad se UI osvježi, guramo manualne postavke
+          cameraState.sensorConfig.setExposureMode(ExposureMode.manual);
+          cameraState.sensorConfig.setIso(400);
+          cameraState.sensorConfig.setShutterSpeed(
             Duration(microseconds: (_shutterValue * 1000000).toInt()),
           );
 
-          return Positioned(
-            bottom: 80,
-            left: 20,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "BRZINA: 1 / ${(1 / _shutterValue).toStringAsFixed(0)}s",
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          return Stack(
+            children: [
+              Positioned(
+                bottom: 80,
+                left: 20,
+                right: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  const SizedBox(height: 10),
-                  Slider(
-                    value: _shutterValue,
-                    min: 0.0005, // 1/2000s
-                    max: 0.1,    // 1/10s
-                    activeColor: Colors.orangeAccent,
-                    onChanged: (v) {
-                      setState(() {
-                        _shutterValue = v;
-                      });
-                    },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "SHUTTER: 1 / ${(1 / _shutterValue).toStringAsFixed(0)}s",
+                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Slider(
+                        value: _shutterValue,
+                        min: 0.0005,
+                        max: 0.1,
+                        activeColor: Colors.orangeAccent,
+                        onChanged: (v) {
+                          setState(() {
+                            _shutterValue = v;
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           );
         },
       ),
