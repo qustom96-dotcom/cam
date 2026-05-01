@@ -3,20 +3,20 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
   runApp(const MaterialApp(
-    home: KameraScreen(),
+    home: KameraProScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
-class KameraScreen extends StatefulWidget {
-  const KameraScreen({super.key});
+class KameraProScreen extends StatefulWidget {
+  const KameraProScreen({super.key});
 
   @override
-  State<KameraScreen> createState() => _KameraScreenState();
+  State<KameraProScreen> createState() => _KameraProScreenState();
 }
 
-class _KameraScreenState extends State<KameraScreen> {
-  double _brzina = 0.02; // Početna brzina 1/50s
+class _KameraProScreenState extends State<KameraProScreen> {
+  double _shutterValue = 0.02; // 1/50s
 
   @override
   Widget build(BuildContext context) {
@@ -29,43 +29,42 @@ class _KameraScreenState extends State<KameraScreen> {
           aspectRatio: CameraAspectRatios.ratio_16_9,
         ),
         previewFit: CameraPreviewFit.cover,
-        // Overlay je najbolji način da kontrolišeš senzor u realnom vremenu
+        // Overlay koji direktno komanduje senzoru
         onOverlay: (state) {
+          // Svaki put kad se ekran osvježi, potvrđujemo manualne postavke
+          state.sensorConfig.setExposureMode(ExposureMode.manual);
+          state.sensorConfig.setIso(400); 
+          state.sensorConfig.setShutterSpeed(
+            Duration(microseconds: (_shutterValue * 1000000).toInt()),
+          );
+
           return Positioned(
-            bottom: 100,
+            bottom: 80,
             left: 20,
             right: 20,
             child: Container(
-              padding: const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(30),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "SHUTTER: 1 / ${(1 / _brzina).toStringAsFixed(0)}s",
-                    style: const TextStyle(
-                      color: Colors.white, 
-                      fontSize: 18, 
-                      fontWeight: FontWeight.bold
-                    ),
+                    "BRZINA: 1 / ${(1 / _shutterValue).toStringAsFixed(0)}s",
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 10),
                   Slider(
-                    value: _brzina,
+                    value: _shutterValue,
                     min: 0.0005, // 1/2000s
-                    max: 0.2,    // 1/5s
+                    max: 0.1,    // 1/10s
+                    activeColor: Colors.orangeAccent,
                     onChanged: (v) {
                       setState(() {
-                        _brzina = v;
+                        _shutterValue = v;
                       });
-                      // Ovdje šaljemo komande senzoru
-                      state.sensorConfig.setExposureMode(ExposureMode.manual);
-                      state.sensorConfig.setIso(400); // Fiksiramo da ne skače samo
-                      state.sensorConfig.setShutterSpeed(
-                        Duration(microseconds: (v * 1000000).toInt()),
-                      );
                     },
                   ),
                 ],
