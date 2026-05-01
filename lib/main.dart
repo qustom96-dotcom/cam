@@ -18,7 +18,7 @@ class KameraProApp extends StatelessWidget {
           
           // Kontrole koje si tražio (ISO, Shutter, Focus...)
           onMediaTap: (media) {
-            print("Snimljeno: ${media.filePath}");
+            print("Snimljeno: ${media.captureRequest.toString()}");
           },
           
           // Senzor i rezolucija
