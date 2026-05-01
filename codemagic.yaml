@@ -1,8 +1,8 @@
 workflows:
   ios-build:
     name: iOS Build
-    instance_type: mac_mini_m1
+    instance_type: mac_mini_m2
     scripts:
-      - flutter build ios --simulator --debug
+      - flutter build ios --release --no-codesign
     artifacts:
-      - build/ios/iphonesimulator/*.app
+      - build/ios/iphoneos/*.app
