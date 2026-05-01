@@ -25,76 +25,64 @@ class KameraScreen extends StatefulWidget {
 }
 
 class _KameraScreenState extends State<KameraScreen> {
-  // Početna vrijednost shutter speeda (1/20 sekunde)
-  double _currentShutterSpeed = 0.05;
+  // Počinjemo sa 1/50 sekunde (0.02s)
+  double _currentShutterSpeed = 0.02;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          CameraAwesomeBuilder.awesome(
-            saveConfig: SaveConfig.photoAndVideo(),
-            sensorConfig: SensorConfig.single(
-              sensor: Sensor.position(SensorPosition.back),
-              aspectRatio: CameraAspectRatios.ratio_16_9,
-            ),
-            // Ova funkcija se poziva svaki put kad se UI osvježi
-            onCondition: (state) {
-              // ZAKLJUČAVAMO ekspoziciju da bi ručni shutter speed radio
-              state.sensorConfig.setExposureMode(ExposureMode.locked);
-              // PRETVARAMO sekunde u mikrosekunde za plugin
-              state.sensorConfig.setShutterSpeed(
-                Duration(microseconds: (_currentShutterSpeed * 1000000).toInt()),
-              );
-              return null;
-            },
-            previewFit: CameraPreviewFit.cover,
-            onMediaTap: (mediaCapture) {
-              mediaCapture.captureRequest.when(
-                single: (single) {
-                  print("Snimljeno: ${single.file?.path}");
-                },
-              );
-            },
-          ),
-
-          // UI Kontrola za Shutter Speed
-          Positioned(
-            bottom: 120,
-            left: 30,
-            right: 30,
+      body: CameraAwesomeBuilder.awesome(
+        saveConfig: SaveConfig.photoAndVideo(),
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.back),
+          aspectRatio: CameraAspectRatios.ratio_16_9,
+        ),
+        previewFit: CameraPreviewFit.cover,
+        // Ovdje pravimo naš vlastiti interfejs preko kamere
+        onOverlay: (state) {
+          return Positioned(
+            bottom: 100,
+            left: 20,
+            right: 20,
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(15),
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Shutter: 1 / ${(1 / _currentShutterSpeed).toStringAsFixed(0)}s",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    "BRZINA: 1 / ${(1 / _currentShutterSpeed).toStringAsFixed(0)}s",
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 10),
                   Slider(
                     value: _currentShutterSpeed,
-                    min: 0.001, // 1/1000 sec (veoma brzo - tamno)
-                    max: 0.5,   // 1/2 sec (sporo - svijetlo)
-                    divisions: 100,
-                    activeColor: Colors.yellow,
+                    min: 0.0005, // 1/2000s (jako tamno)
+                    max: 0.1,    // 1/10s (jako svijetlo)
                     onChanged: (value) {
                       setState(() {
                         _currentShutterSpeed = value;
                       });
+                      
+                      // DIREKTNO komandujemo senzoru
+                      state.sensorConfig.setExposureMode(ExposureMode.manual);
+                      // Fiksiramo ISO da nam ne kvari testiranje
+                      state.sensorConfig.setIso(400); 
+                      // Postavljamo tvoju brzinu
+                      state.sensorConfig.setShutterSpeed(
+                        Duration(microseconds: (value * 1000000).toInt()),
+                      );
                     },
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
