@@ -1,80 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: KameraProScreen(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+void main() => runApp(const MaterialApp(home: KameraScreen(), debugShowCheckedModeBanner: false));
 
-class KameraProScreen extends StatefulWidget {
-  const KameraProScreen({super.key});
-
+class KameraScreen extends StatefulWidget {
+  const KameraScreen({super.key});
   @override
-  State<KameraProScreen> createState() => _KameraProScreenState();
+  State<KameraScreen> createState() => _KameraScreenState();
 }
 
-class _KameraProScreenState extends State<KameraProScreen> {
-  double _shutterValue = 0.02; // 1/50s
+class _KameraScreenState extends State<KameraScreen> {
+  double _brzina = 0.02;
+  SensorConfig? _sensor; // Ovdje ćemo čuvati kontrolu
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photoAndVideo(),
-        sensorConfig: SensorConfig.single(
-          sensor: Sensor.position(SensorPosition.back),
-          aspectRatio: CameraAspectRatios.ratio_16_9,
-        ),
-        previewFit: CameraPreviewFit.cover,
-        // ISPRAVLJEN BUILDER: Ovo je razlog zašto je build pucao
-        builder: (cameraState, preview) {
-          // Svaki put kad se UI osvježi, guramo manualne postavke
-          cameraState.sensorConfig.setExposureMode(ExposureMode.manual);
-          cameraState.sensorConfig.setIso(400);
-          cameraState.sensorConfig.setShutterSpeed(
-            Duration(microseconds: (_shutterValue * 1000000).toInt()),
-          );
-
-          return Stack(
-            children: [
-              Positioned(
-                bottom: 80,
-                left: 20,
-                right: 20,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(30),
+      body: Stack(
+        children: [
+          CameraAwesomeBuilder.awesome(
+            saveConfig: SaveConfig.photoAndVideo(),
+            onCondition: (state) {
+              _sensor = state.sensorConfig; // Snimimo senzor da ga imamo kasnije
+              return null;
+            },
+            sensorConfig: SensorConfig.single(
+              sensor: Sensor.position(SensorPosition.back),
+            ),
+          ),
+          Positioned(
+            bottom: 50, left: 20, right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              color: Colors.black54,
+              child: Column(
+                children: [
+                  Text("BRZINA: 1/${(1/_brzina).toStringAsFixed(0)}s", style: const TextStyle(color: Colors.white)),
+                  Slider(
+                    value: _brzina,
+                    min: 0.001, max: 0.1,
+                    onChanged: (v) {
+                      setState(() => _brzina = v);
+                      // Ako smo "uhvatili" senzor, promijeni mu brzinu
+                      if (_sensor != null) {
+                        _sensor!.setExposureMode(ExposureMode.manual);
+                        _sensor!.setShutterSpeed(Duration(microseconds: (v * 1000000).toInt()));
+                      }
+                    },
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "SHUTTER: 1 / ${(1 / _shutterValue).toStringAsFixed(0)}s",
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Slider(
-                        value: _shutterValue,
-                        min: 0.0005,
-                        max: 0.1,
-                        activeColor: Colors.orangeAccent,
-                        onChanged: (v) {
-                          setState(() {
-                            _shutterValue = v;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
